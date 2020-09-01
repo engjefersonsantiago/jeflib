@@ -27,9 +27,9 @@ TEST_F(BitsetTest, ConcatConstexpr) {
   constexpr std::bitset<1> bs1{1};
   constexpr std::bitset<2> bs2{1};
   constexpr std::bitset<3> bs3{1};
-  static_assert(to_uint64(concat(bs1, bs2, bs3)) == to_uint64(std::bitset<6>(41)));
+  static_assert(to_uint64(concat(bs1, bs2, bs3)) ==
+                to_uint64(std::bitset<6>(41)));
 }
-
 
 TEST_F(BitsetTest, Split) {
   std::bitset<1> bs1{};
@@ -43,23 +43,23 @@ TEST_F(BitsetTest, ConcatSplit) {
   std::bitset<1> bs1{};
   std::bitset<2> bs2{};
   std::bitset<3> bs3{};
-  static constexpr std::bitset<1> bs1_golden{1};
-  static constexpr std::bitset<2> bs2_golden{1};
-  static constexpr std::bitset<3> bs3_golden{1};
+  constexpr std::bitset<1> bs1_golden{1};
+  constexpr std::bitset<2> bs2_golden{1};
+  constexpr std::bitset<3> bs3_golden{1};
   constexpr auto concat_result = concat(bs1_golden, bs2_golden, bs3_golden);
   split(concat_result, bs1, bs2, bs3);
   EXPECT_TRUE(bs1 == bs1_golden && bs2 == bs2_golden && bs3 == bs3_golden);
 }
 
 TEST_F(BitsetTest, ConcatStr) {
-  std::bitset<64> bs1{1};
-  std::bitset<1> bs2{1};
-  constexpr auto golden = std::bitset<65>(3);
+  constexpr std::bitset<64> bs1{1};
+  constexpr std::bitset<1> bs2{1};
+  constexpr auto golden = std::bitset<65>{3};
   EXPECT_EQ(concat(bs1, bs2), golden);
 }
 
 TEST_F(BitsetTest, SplittStr) {
-  constexpr auto golden = std::bitset<65>(3);
+  constexpr auto golden = std::bitset<65>{3};
   std::bitset<64> bs1{};
   std::bitset<1> bs2{};
   split(golden, bs1, bs2);
@@ -87,4 +87,28 @@ TEST_F(BitsetTest, SplitSingleParam) {
   std::bitset<1> bs2{};
   split(bs1, bs2);
   EXPECT_EQ(bs2, bs1);
+}
+
+TEST_F(BitsetTest, Range) {
+  constexpr std::bitset<5> bs_golden{24};  // "11000"
+  constexpr auto range_result = range(bs_golden, 3, 2);
+  EXPECT_TRUE(range_result == std::bitset<5>{3});
+}
+
+TEST_F(BitsetTest, RangeFixed) {
+  constexpr std::bitset<5> bs_golden{24};  // "11000"
+  constexpr auto range_result = range<decltype(bs_golden), 3ul, 2ul>(bs_golden);
+  EXPECT_TRUE(range_result == std::bitset<2>{3});
+}
+
+TEST_F(BitsetTest, RangeStr) {
+  std::bitset<65> bs_golden{24};  // "11000"
+  auto range_result = range(bs_golden, 3, 2);
+  bs_golden = 1;
+  auto range_result2 = range(bs_golden, 0, 1);
+  bs_golden[64] = 1;
+  auto range_result3 = range(bs_golden, 64, 1);
+  EXPECT_TRUE(range_result == decltype(bs_golden){3} &&
+              range_result2 == decltype(bs_golden){1} &&
+              range_result3 == decltype(bs_golden){1});
 }

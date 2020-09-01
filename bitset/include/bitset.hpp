@@ -35,7 +35,7 @@ template <typename... Bitsets, std::size_t Size = sum(Bitsets().size()...)>
 constexpr auto concat(const Bitsets&... bitsets) requires(
     Is_Trivially_Constructible<Size>) {
   const auto list_ulong = std::array{to_uint64(bitsets)...};
-  const auto List_Sizes = std::array{Bitsets().size()...};
+  constexpr auto List_Sizes = std::array{Bitsets().size()...};
   std::uint64_t bs_uint{};
   std::size_t idx{};
   std::size_t shift{Size};
@@ -64,10 +64,11 @@ auto split(const Bitset& bs, BS1& bs1) {
 
 template <typename Bitset, typename BS1, typename... Bitsets,
           std::uint64_t Bs_Size = Bitset().size(),
-          std::uint64_t Bs1_Size = BS1().size()>
-auto split(const Bitset& bs, BS1& bs1, Bitsets&... bitsets) requires(
-    Is_Trivially_Constructible<Bitset().size()>) {
-  static_assert(Bs_Size == sum(Bs1_Size, Bitsets().size()...));
+          std::uint64_t Bs1_Size = BS1().size(),
+          std::uint64_t Bsrest_Size = sum(Bitsets().size()...)>
+auto split(const Bitset& bs, BS1& bs1,
+           Bitsets&... bitsets) requires(Is_Trivially_Constructible<Bs_Size>) {
+  static_assert(Bs_Size == Bs1_Size + Bsrest_Size);
   bs1 = BS1{(bs >> (Bs_Size - Bs1_Size)).to_ulong()};
   constexpr auto Shift = ((Bs_Size - Bs1_Size) < 8 * sizeof(std::uint64_t))
                              ? (Bs_Size - Bs1_Size)
@@ -81,14 +82,46 @@ auto split(const Bitset& bs, BS1& bs1, Bitsets&... bitsets) requires(
 
 template <typename Bitset, typename BS1, typename... Bitsets,
           std::uint64_t Bs_Size = Bitset().size(),
-          std::uint64_t Bs1_Size = BS1().size()>
-auto split(const Bitset& bs, BS1& bs1, Bitsets&... bitsets) requires(
-    !Is_Trivially_Constructible<Bitset().size()>) {
-  static_assert(Bitset().size() == sum(BS1().size(), Bitsets().size()...));
+          std::uint64_t Bs1_Size = BS1().size(),
+          std::uint64_t Bsrest_Size = sum(Bitsets().size()...)>
+auto split(const Bitset& bs, BS1& bs1,
+           Bitsets&... bitsets) requires(!Is_Trivially_Constructible<Bs_Size>) {
+  static_assert(Bs_Size == Bs1_Size + Bsrest_Size);
   bs1 = BS1{bs.to_string().substr(0, Bs1_Size)};
   const auto& s2 = std::bitset<Bs_Size - Bs1_Size>{
       bs.to_string().substr(Bs1_Size, Bs_Size - Bs1_Size)};
   split(s2, bitsets...);
+}
+
+template <typename Bitset, std::size_t Offset, std::size_t Count,
+          std::size_t Bs_Size = Bitset().size()>
+constexpr auto range(const Bitset& bs) requires(
+    Is_Trivially_Constructible<Bs_Size> && (Offset + Count) <= Bs_Size) {
+  std::uint64_t bs_uint{};
+
+  for (auto idx = Offset; idx < Offset + Count; ++idx) {
+    bs_uint |= bs[idx] << (idx - Offset);
+  }
+  return std::bitset<Count>{bs_uint};
+}
+
+template <typename Bitset, std::size_t Bs_Size = Bitset().size()>
+constexpr auto range(
+    const Bitset& bs, const std::uint64_t offset,
+    const std::uint64_t count) requires(Is_Trivially_Constructible<Bs_Size>) {
+  std::uint64_t bs_uint{};
+
+  for (auto idx = offset; idx < offset + count; ++idx) {
+    bs_uint |= bs[idx] << (idx - offset);
+  }
+  return Bitset{bs_uint};
+}
+
+template <typename Bitset, std::size_t Bs_Size = Bitset().size()>
+auto range(
+    const Bitset& bs, const std::uint64_t offset,
+    const std::uint64_t count) requires(!Is_Trivially_Constructible<Bs_Size>) {
+  return Bitset{bs.to_string().substr(Bs_Size - offset - count, count)};
 }
 
 }  // namespace Bitset
