@@ -97,7 +97,7 @@ TEST_F(BitsetTest, Range) {
 
 TEST_F(BitsetTest, RangeFixed) {
   constexpr std::bitset<5> bs_golden{24};  // "11000"
-  constexpr auto range_result = range<decltype(bs_golden), 3ul, 2ul>(bs_golden);
+  constexpr auto range_result = range<3ul, 2ul>(bs_golden);
   EXPECT_TRUE(range_result == std::bitset<2>{3});
 }
 
