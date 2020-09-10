@@ -30,30 +30,38 @@ constexpr std::uint64_t sum(const P1& p1, const Params&... params) {
 template <typename Bitset, std::size_t Size = Bitset().size(),
           typename std::enable_if<Is_Trivially_Constructible<Size>::value,
                                   int>::type = 0>
-std::uint64_t to_uint64(const Bitset& bs) {
-  std::uint64_t result{};
-  for (std::uint64_t i = 0; i < Size; ++i) {
-    result |= (static_cast<std::uint64_t>(bs[i]) << i);
-  }
-  return result;
+constexpr std::uint64_t to_uint64(const Bitset& bs, std::size_t size = Size) {
+  return (size == 0) ? std::uint64_t{static_cast<std::uint64_t>(bs[Size - 1])}
+                     : std::uint64_t{static_cast<std::uint64_t>(bs[Size - size])
+                                         << (Size - size) |
+                                     to_uint64(bs, size - 1)};
+}
+
+template <typename BS1, std::size_t Size = BS1().size(),
+          typename std::enable_if<Is_Trivially_Constructible<Size>::value,
+                                  int>::type = 0>
+constexpr std::bitset<Size> concat_impl(const std::size_t shift,
+                                        const BS1& bs) {
+  return (to_uint64(bs) << (shift - Size));
+}
+
+template <typename BS1, typename... Bitsets,
+          std::size_t Size = sum(Bitsets().size()...) + BS1().size(),
+          typename std::enable_if<Is_Trivially_Constructible<Size>::value,
+                                  int>::type = 0>
+constexpr std::bitset<Size> concat_impl(const std::size_t shift, const BS1& bs,
+                                        const Bitsets&... bitsets) {
+  return std::bitset<Size>{
+      to_uint64(bs) << (shift - BS1().size()) |
+      to_uint64(concat_impl(shift - BS1().size(), bitsets...))};
 }
 
 template <typename... Bitsets, std::size_t Size = sum(Bitsets().size()...),
           std::size_t Num_Params = sizeof...(Bitsets),
           typename std::enable_if<Is_Trivially_Constructible<Size>::value,
                                   int>::type = 0>
-std::bitset<Size> concat(const Bitsets&... bitsets) {
-  const auto list_ulong =
-      std::array<std::uint64_t, Num_Params>{to_uint64(bitsets)...};
-  constexpr auto List_Sizes =
-      std::array<std::uint64_t, Num_Params>{Bitsets().size()...};
-  std::uint64_t bs_uint{};
-  std::size_t idx{};
-  std::size_t shift{Size};
-  for (auto bs = list_ulong.rbegin(); bs != list_ulong.rend(); ++bs) {
-    bs_uint |= (*bs << (shift -= List_Sizes[idx++]));
-  }
-  return std::bitset<Size>{bs_uint};
+constexpr std::bitset<Size> concat(const Bitsets&... bitsets) {
+  return concat_impl(Size, bitsets...);
 }
 
 template <typename... Bitsets, std::size_t Size = sum(Bitsets().size()...),
