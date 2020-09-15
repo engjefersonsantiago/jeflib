@@ -3,7 +3,7 @@ language: cpp
 
 before_install:
   - sudo apt-get update
-  - sudo apt-get -y install googletest libgtest-dev doxygen
+  - sudo apt-get -y install googletest libgtest-dev doxygen graphviz 
 
 script:
   - cmake ./bitset/
