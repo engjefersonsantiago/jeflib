@@ -8,22 +8,29 @@
 #include <string>
 #include <tuple>
 
-namespace JefLib {
-namespace Bitset {
+namespace JefLib::Bitset {
 
-template <std::size_t N>
-concept Is_Trivially_Constructible = (N <= 8 * sizeof(uint64_t));
+static constexpr auto UINT64_BIT_WIDTH = 8 * sizeof(uint64_t);
+template <typename Bitset>
+using rm_cvref_t = std::remove_cvref_t<Bitset>;
 
-template <typename... Params>
-constexpr auto sum(const Params&... params) {
+constexpr auto sum(const auto&... params) {
   std::size_t val = 0;
   ((val += params), ...);
   return val;
 }
 
-template <typename Bitset, std::size_t Size = Bitset().size()>
-constexpr auto to_uint64(const Bitset& bs) requires(
-    Is_Trivially_Constructible<Size>) {
+template <typename... Bitset>
+concept Is_Trivially_Constructible =
+    sum(rm_cvref_t<Bitset>().size()...) <= UINT64_BIT_WIDTH;
+
+template <std::size_t N>
+[[maybe_unused]] static constexpr bool is_trivially_constructible_v =
+    (N <= UINT64_BIT_WIDTH);
+
+constexpr auto to_uint64(const auto& bs) requires(
+    Is_Trivially_Constructible<decltype(bs)>) {
+  auto Size = rm_cvref_t<decltype(bs)>().size();
   std::uint64_t result{};
   for (std::uint64_t i = 0; i < Size; ++i) {
     result |= (static_cast<std::uint64_t>(bs[i]) << i);
@@ -31,11 +38,12 @@ constexpr auto to_uint64(const Bitset& bs) requires(
   return result;
 }
 
-template <typename... Bitsets, std::size_t Size = sum(Bitsets().size()...)>
-constexpr auto concat(const Bitsets&... bitsets) requires(
-    Is_Trivially_Constructible<Size>) {
+constexpr auto concat(const auto&... bitsets) requires(
+    Is_Trivially_Constructible<decltype(bitsets)...>) {
+  constexpr auto Size = sum(rm_cvref_t<decltype(bitsets)>().size()...);
   const auto list_ulong = std::array{to_uint64(bitsets)...};
-  constexpr auto List_Sizes = std::array{Bitsets().size()...};
+  constexpr auto List_Sizes =
+      std::array{rm_cvref_t<decltype(bitsets)>().size()...};
   std::uint64_t bs_uint{};
   std::size_t idx{};
   std::size_t shift{Size};
@@ -45,9 +53,9 @@ constexpr auto concat(const Bitsets&... bitsets) requires(
   return std::bitset<Size>{bs_uint};
 }
 
-template <typename... Bitsets, std::size_t Size = sum(Bitsets().size()...)>
-auto concat(const Bitsets&... bitsets) requires(
-    !Is_Trivially_Constructible<Size>) {
+auto concat(const auto&... bitsets) requires(
+    !Is_Trivially_Constructible<decltype(bitsets)...>) {
+  constexpr auto Size = sum(rm_cvref_t<decltype(bitsets)>().size()...);
   const auto list_string = std::array{bitsets.to_string()...};
   std::string bs_str;
   for (const auto& bs : list_string) {
@@ -56,75 +64,70 @@ auto concat(const Bitsets&... bitsets) requires(
   return std::bitset<Size>{bs_str};
 }
 
-template <typename Bitset, typename BS1>
-auto split(const Bitset& bs, BS1& bs1) {
-  static_assert(Bitset().size() == BS1().size());
-  bs1 = BS1{bs};
+constexpr auto get_split_shift(const auto a, const auto b) {
+  return (a - b) < UINT64_BIT_WIDTH ? (a - b) : 0;
 }
 
-template <typename Bitset, typename BS1, typename... Bitsets,
-          std::uint64_t Bs_Size = Bitset().size(),
-          std::uint64_t Bs1_Size = BS1().size(),
-          std::uint64_t Bsrest_Size = sum(Bitsets().size()...)>
-auto split(const Bitset& bs, BS1& bs1,
-           Bitsets&... bitsets) requires(Is_Trivially_Constructible<Bs_Size>) {
+auto split(const auto& bs, auto& bs1) {
+  static_assert(rm_cvref_t<decltype(bs)>().size() ==
+                rm_cvref_t<decltype(bs1)>().size());
+  bs1 = rm_cvref_t<decltype(bs1)>{bs};
+}
+
+auto split(const auto& bs, auto& bs1, auto&... bitsets) {
+  constexpr std::uint64_t Bs_Size = rm_cvref_t<decltype(bs)>().size();
+  constexpr std::uint64_t Bs1_Size = rm_cvref_t<decltype(bs1)>().size();
+  constexpr std::uint64_t Bsrest_Size =
+      sum(rm_cvref_t<decltype(bitsets)>().size()...);
   static_assert(Bs_Size == Bs1_Size + Bsrest_Size);
-  bs1 = BS1{(bs >> (Bs_Size - Bs1_Size)).to_ulong()};
-  constexpr auto Shift = ((Bs_Size - Bs1_Size) < 8 * sizeof(std::uint64_t))
-                             ? (Bs_Size - Bs1_Size)
-                             : 0;
-  constexpr auto Mask =
-      static_cast<std::uint64_t>((static_cast<std::uint64_t>(1) << Shift) - 1);
-  const auto& s2 =
-      std::bitset<Bs_Size - Bs1_Size>{(bs & Bitset{Mask}).to_ulong()};
-  split(s2, bitsets...);
+  constexpr auto Use_Str =
+      !is_trivially_constructible_v<rm_cvref_t<decltype(bs)>().size()>;
+  constexpr auto Shift = Bs_Size - Bs1_Size;
+  if constexpr (Use_Str) {
+    bs1 = rm_cvref_t<decltype(bs1)>{bs.to_string().substr(0, Bs1_Size)};
+    const auto& bs2 =
+        std::bitset<Shift>{bs.to_string().substr(Bs1_Size, Shift)};
+    split(bs2, bitsets...);
+  } else {
+    constexpr auto Shift_Uint = get_split_shift(Bs_Size, Bs1_Size);
+    constexpr auto Mask = (static_cast<std::uint64_t>(1) << Shift_Uint) - 1;
+    bs1 = rm_cvref_t<decltype(bs1)>{(bs >> Shift).to_ulong()};
+    const auto& bs2 =
+        std::bitset<Shift>{(bs & rm_cvref_t<decltype(bs)>{Mask}).to_ulong()};
+    split(bs2, bitsets...);
+  }
 }
 
-template <typename Bitset, typename BS1, typename... Bitsets,
-          std::uint64_t Bs_Size = Bitset().size(),
-          std::uint64_t Bs1_Size = BS1().size(),
-          std::uint64_t Bsrest_Size = sum(Bitsets().size()...)>
-auto split(const Bitset& bs, BS1& bs1,
-           Bitsets&... bitsets) requires(!Is_Trivially_Constructible<Bs_Size>) {
-  static_assert(Bs_Size == Bs1_Size + Bsrest_Size);
-  bs1 = BS1{bs.to_string().substr(0, Bs1_Size)};
-  const auto& s2 = std::bitset<Bs_Size - Bs1_Size>{
-      bs.to_string().substr(Bs1_Size, Bs_Size - Bs1_Size)};
-  split(s2, bitsets...);
-}
-
-template <typename Bitset, std::size_t Offset, std::size_t Count,
-          std::size_t Bs_Size = Bitset().size()>
-constexpr auto range(const Bitset& bs) requires(
-    Is_Trivially_Constructible<Bs_Size> && (Offset + Count) <= Bs_Size) {
+template <std::size_t Offset, std::size_t Count>
+constexpr auto range(const auto& bs) requires(
+    Is_Trivially_Constructible<decltype(bs)> &&
+    (Offset + Count) <= rm_cvref_t<decltype(bs)>().size()) {
   std::uint64_t bs_uint{};
-
   for (auto idx = Offset; idx < Offset + Count; ++idx) {
     bs_uint |= bs[idx] << (idx - Offset);
   }
   return std::bitset<Count>{bs_uint};
 }
 
-template <typename Bitset, std::size_t Bs_Size = Bitset().size()>
 constexpr auto range(
-    const Bitset& bs, const std::uint64_t offset,
-    const std::uint64_t count) requires(Is_Trivially_Constructible<Bs_Size>) {
+    const auto& bs, const std::uint64_t offset,
+    const std::uint64_t
+        count) requires(Is_Trivially_Constructible<decltype(bs)>) {
   std::uint64_t bs_uint{};
-
   for (auto idx = offset; idx < offset + count; ++idx) {
     bs_uint |= bs[idx] << (idx - offset);
   }
-  return Bitset{bs_uint};
+  return rm_cvref_t<decltype(bs)>{bs_uint};
 }
 
-template <typename Bitset, std::size_t Bs_Size = Bitset().size()>
-auto range(
-    const Bitset& bs, const std::uint64_t offset,
-    const std::uint64_t count) requires(!Is_Trivially_Constructible<Bs_Size>) {
-  return Bitset{bs.to_string().substr(Bs_Size - offset - count, count)};
+auto range(const auto& bs, const std::uint64_t offset,
+           const std::uint64_t
+               count) requires(!Is_Trivially_Constructible<decltype(bs)>) {
+  constexpr auto Bs_Size = rm_cvref_t<decltype(bs)>().size();
+  return rm_cvref_t<decltype(bs)>{
+      bs.to_string().substr(Bs_Size - offset - count, count)};
 }
 
-}  // namespace Bitset
-}  // namespace JefLib
+}  // namespace JefLib::Bitset
 
 #endif
