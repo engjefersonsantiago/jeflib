@@ -7,8 +7,6 @@ addons:
       - ubuntu-toolchain-r-test
     packages:
       # I couldn't get ${GCC_VER} in here successfully
-      - gcc-10
-      - g++-10
       - clang-10
       - clang++-10
       - doxygen
@@ -18,7 +16,7 @@ addons:
       - exuberant-ctags 
 
 script:
-  - cmake ./bitset/
+  - CXX=/usr/bin/clang++-10 CC=/usr/bin/clang10 cmake ./bitset/
   - cmake --build . -- -j2
   - ctest
 
