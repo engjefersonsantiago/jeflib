@@ -1,6 +1,5 @@
-dist: bionic
-sudo: false
-langage: cpp
+dist: focal
+language: cpp
 
 before_install:
   - sudo apt-get update
