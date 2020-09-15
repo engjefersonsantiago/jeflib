@@ -3,6 +3,6 @@ sudo: false
 langage: cpp
 
 script:
-  - cmake ./*
-  - cmake --build ./* --j2
+  - cmake ./bitset
+  - cmake --build ./bitset --j2
 
