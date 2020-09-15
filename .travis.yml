@@ -4,5 +4,5 @@ langage: cpp
 
 script:
   - cmake ./bitset
-  - cmake --build ./bitset --j2
+  - cmake --build . --j2
 
