@@ -1,0 +1,22 @@
+dist: focal
+language: cpp
+
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      # I couldn't get ${GCC_VER} in here successfully
+      - clang-10
+      - clang++-10
+      - doxygen
+      - googletest 
+      - libgtest-dev 
+      - graphviz
+      - exuberant-ctags 
+
+script:
+  - CXX=/usr/bin/clang++-10 CC=/usr/bin/clang-10 cmake ./bitset/
+  - cmake --build . -- -j2
+  - ctest
+

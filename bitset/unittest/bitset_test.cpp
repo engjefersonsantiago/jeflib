@@ -3,7 +3,6 @@
 #include <gtest/gtest.h>
 
 #include <bitset>
-#include <tuple>
 
 using namespace JefLib::Bitset;
 
