@@ -5,7 +5,6 @@ project(biset)
 
 # Set a default C++ compile flag
 SET (CMAKE_CXX_COMPILER             "/usr/bin/g++")
-#set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DEX2 -std=c++20 -O3 -Wpedantic -Werror -Wall -Wextra" CACHE STRING "Set C++ Compiler Flags" FORCE)
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DEX2 -std=c++20 -O3 -Wpedantic -Werror -Wall -Wextra")
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address,leak,undefined -g")
 
@@ -34,7 +33,7 @@ target_link_libraries(bitset_test
     GTest::Main
 )
 
-add_test(test_all unit_tests)
+add_test(test_all bitset_test)
 
 ## Custom CTAGS
 # Add a top-level "tags" target which includes all files in both

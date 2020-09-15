@@ -1,11 +1,24 @@
 dist: focal
 language: cpp
 
-before_install:
-  - sudo apt-get update
-  - sudo apt-get -y install googletest libgtest-dev doxygen graphviz exuberant-ctags 
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      # I couldn't get ${GCC_VER} in here successfully
+      - gcc-10
+      - g++-10
+      - clang-10
+      - clang++-10
+      - doxygen
+      - googletest 
+      - libgtest-dev 
+      - graphviz
+      - exuberant-ctags 
 
 script:
   - cmake ./bitset/
   - cmake --build . -- -j2
+  - ctest
 
