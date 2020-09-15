@@ -4,7 +4,6 @@ project(biset)
 
 
 # Set a default C++ compile flag
-SET (CMAKE_CXX_COMPILER             "/usr/bin/g++")
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DEX2 -std=c++20 -O3 -Wpedantic -Werror -Wall -Wextra")
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address,leak,undefined -g")
 
