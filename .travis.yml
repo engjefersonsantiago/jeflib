@@ -2,7 +2,11 @@ dist: trusty
 sudo: false
 langage: cpp
 
+before_install:
+  - sudo apt-get update
+  - sudo apt-get -y install libgtest-dev
+
 script:
-  - cmake ./bitset
+  - cmake ./bitset/
   - cmake --build . --j2
 
