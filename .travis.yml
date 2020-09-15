@@ -3,16 +3,8 @@ sudo: false
 langage: cpp
 
 before_install:
-  this_dir=$(pwd)
-  cd ~
-  git clone https://github.com/google/googletest.git
-  cd googletest
-  mkdir build && cd build
-  cmake .. -DBUILD_SHARED_LIBS=ON -DINSTALL_GTEST=ON -DCMAKE_INSTALL_PREFIX:PATH=/usr
-  make -j8
-  sudo make install
-  sudo ldconfig
-  cd $this_dir
+  - sudo apt-get update
+  - sudo apt-get -y install googletest libgtest-dev
 
 script:
   - cmake ./bitset/
