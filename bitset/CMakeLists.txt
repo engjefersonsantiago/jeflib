@@ -21,14 +21,14 @@ find_package(GTest REQUIRED)
 add_executable(bitset_test tags unittest/bitset_test.cpp)
 
 target_include_directories(bitset_test
-    PUBLIC 
+    PUBLIC
         ${PROJECT_SOURCE_DIR}/include
 )
 
 
 target_link_libraries(bitset_test
-    PRIVATE 
-    GTest::GTest 
+    PRIVATE
+    GTest::GTest
     GTest::Main
 )
 
