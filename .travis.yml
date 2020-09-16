@@ -8,9 +8,6 @@ addons:
     packages:
       # I couldn't get ${GCC_VER} in here successfully
       - gcc-10
-      - clang-10
-      - clang++-10
-      - llvm-10
       - g++-10
       - doxygen
       - googletest 
@@ -18,9 +15,9 @@ addons:
       - graphviz
       - exuberant-ctags 
 after_script:
-  - bash <(curl -s https://codecov.io/bash) -x /usr/bin/llvm-cov gcov
+  - bash <(curl -s https://codecov.io/bash) -x /usr/bin/gcov-10
 script:
-  - CXX=/usr/bin/clang++-10 CC=/usr/bin/clang-10 cmake -D ENABLE_COVERAGE:BOOL=TRUE ./bitset/
+  - CXX=/usr/bin/g++-10 CC=/usr/bin/gcc-10 cmake -D ENABLE_COVERAGE:BOOL=TRUE ./bitset/
   - cmake --build . -- -j2
   - ctest
 

@@ -20,8 +20,9 @@ constexpr auto sum(const auto&... params) {
   return val;
 }
 
+// Declared template variable cuz a concept does not compile in g++
 template <typename... Bitset>
-concept Is_Trivially_Constructible =
+constexpr auto Is_Trivially_Constructible =
     sum(rm_cvref_t<Bitset>().size()...) <= UINT64_BIT_WIDTH;
 
 template <std::size_t N>
