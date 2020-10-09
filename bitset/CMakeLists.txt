@@ -21,7 +21,7 @@ find_package(GTest REQUIRED)
 
 # Add a testing executable
 
-add_executable(bitset_test tags unittest/bitset_test.cpp)
+add_executable(bitset_test bitset_tags unittest/bitset_test.cpp)
 
 target_include_directories(bitset_test
     PUBLIC

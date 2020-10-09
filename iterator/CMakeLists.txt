@@ -18,7 +18,7 @@ find_package(GTest REQUIRED)
 
 # Add a testing executable
 
-add_executable(iterator_test tags unittest/iterator.cpp)
+add_executable(iterator_test iterator_tags unittest/iterator.cpp)
 
 target_include_directories(iterator_test
     PUBLIC
@@ -47,8 +47,8 @@ add_test(test_all iterator_test)
 ## Custom CTAGS
 # Add a top-level "tags" target which includes all files in both
 # the build and source versions of src/*.
-set_source_files_properties(tags PROPERTIES GENERATED true)
-add_custom_target(tags
+set_source_files_properties(iterator_tags PROPERTIES GENERATED true)
+add_custom_target(iterator_tags
     COMMAND ctags -R --c++-kinds=+p --fields=+iaS --extra=+q
         ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}
         #COMMAND ln -sf ${CMAKE_CURRENT_BINARY_DIR}/tags ${CMAKE_BINARY_DIR}
@@ -59,7 +59,7 @@ add_custom_target(tags
 find_program(CTAGS_PATH ctags)
 if(CTAGS_PATH)
     message(STATUS "Found ctags: ${CTAGS_PATH}")
-    add_dependencies(iterator_test tags)
+    add_dependencies(iterator_test iterator_tags)
 endif(CTAGS_PATH)
 
 # Build Docs

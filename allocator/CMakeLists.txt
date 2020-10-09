@@ -18,7 +18,7 @@ find_package(GTest REQUIRED)
 
 # Add a testing executable
 
-add_executable(allocator_test tags unittest/allocator_test.cpp)
+add_executable(allocator_test allocator_tags unittest/allocator_test.cpp)
 
 target_include_directories(allocator_test
     PUBLIC
@@ -59,7 +59,7 @@ add_custom_target(allocator_tags
 find_program(CTAGS_PATH ctags)
 if(CTAGS_PATH)
     message(STATUS "Found ctags: ${CTAGS_PATH}")
-    add_dependencies(allocator_test tags)
+    add_dependencies(allocator_test allocator_tags)
 endif(CTAGS_PATH)
 
 # Build Docs
