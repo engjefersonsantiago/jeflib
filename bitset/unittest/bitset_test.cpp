@@ -8,13 +8,6 @@ using namespace JefLib::Bitset;
 
 struct BitsetTest : testing::Test {};
 
-TEST_F(BitsetTest, SumSizes) {
-  std::bitset<1> bs1{};
-  std::bitset<2> bs2{};
-  std::bitset<3> bs3{};
-  EXPECT_EQ(sum(bs1.size(), bs2.size(), bs3.size()), 6);
-}
-
 TEST_F(BitsetTest, Concat) {
   constexpr std::bitset<1> bs1{1};
   constexpr std::bitset<2> bs2{1};
@@ -111,3 +104,9 @@ TEST_F(BitsetTest, RangeStr) {
               range_result2 == decltype(bs_golden){1} &&
               range_result3 == decltype(bs_golden){1});
 }
+
+int main(int argc, char* argv[]) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}
+

@@ -12,8 +12,6 @@ set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address,leak,undefined -g -f
 ############################################################
 
 ## Test target
-include_directories(../common/include)
-
 include(CTest)
 enable_testing()
 
@@ -21,21 +19,21 @@ find_package(GTest REQUIRED)
 
 # Add a testing executable
 
-add_executable(bitset_test tags unittest/bitset_test.cpp)
+add_executable(common_test common_tags unittest/common_test.cpp)
 
-target_include_directories(bitset_test
+target_include_directories(common_test
     PUBLIC
         ${PROJECT_SOURCE_DIR}/include
 )
 
 
-target_link_libraries(bitset_test
+target_link_libraries(common_test
     PRIVATE
     GTest::GTest
     #GTest::Main
 )
 
-add_test(test_all bitset_test)
+add_test(test_all common_test)
 
 #include(CodeCoverage.cmake)
 #APPEND_COVERAGE_COMPILER_FLAGS()
@@ -43,15 +41,15 @@ add_test(test_all bitset_test)
 #        NAME biset_coverage                 
 #        EXECUTABLE ctest -j 2 # Executable in PROJECT_BINARY_DIR
 #        DEPENDENCIES
-#        bitset_test
+#        common_test
 #            )
 #
 
 ## Custom CTAGS
 # Add a top-level "tags" target which includes all files in both
 # the build and source versions of src/*.
-set_source_files_properties(bitset_tags PROPERTIES GENERATED true)
-add_custom_target(bitset_tags
+set_source_files_properties(common_tags PROPERTIES GENERATED true)
+add_custom_target(common_tags
     COMMAND ctags -R --c++-kinds=+p --fields=+iaS --extra=+q
         ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}
         #COMMAND ln -sf ${CMAKE_CURRENT_BINARY_DIR}/tags ${CMAKE_BINARY_DIR}
@@ -62,7 +60,7 @@ add_custom_target(bitset_tags
 find_program(CTAGS_PATH ctags)
 if(CTAGS_PATH)
     message(STATUS "Found ctags: ${CTAGS_PATH}")
-    add_dependencies(bitset_test bitset_tags)
+    add_dependencies(common_test common_tags)
 endif(CTAGS_PATH)
 
 # Build Docs
@@ -75,7 +73,7 @@ set(DOXYGEN_GENERATE_HTML YES)
 set(DOXYGEN_GENERATE_MAN NO)
 
 doxygen_add_docs(
-    bitset_doxygen
+    common_doxygen
     ${PROJECT_SOURCE_DIR}
     COMMENT "Generate doc pages"
 )

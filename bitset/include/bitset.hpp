@@ -8,22 +8,19 @@
 #include <string>
 #include <tuple>
 
+#include "common.hpp"
+
+namespace jefc = JefLib::Common;
 namespace JefLib::Bitset {
 
 static constexpr auto UINT64_BIT_WIDTH = 8 * sizeof(uint64_t);
 template <typename Bitset>
 using rm_cvref_t = std::remove_cvref_t<Bitset>;
 
-constexpr auto sum(const auto&... params) {
-  std::size_t val = 0;
-  ((val += params), ...);
-  return val;
-}
-
 // Declared template variable cuz a concept does not compile in g++
 template <typename... Bitset>
 constexpr auto Is_Trivially_Constructible =
-    sum(rm_cvref_t<Bitset>().size()...) <= UINT64_BIT_WIDTH;
+    jefc::sum(rm_cvref_t<Bitset>().size()...) <= UINT64_BIT_WIDTH;
 
 template <std::size_t N>
 [[maybe_unused]] static constexpr bool is_trivially_constructible_v =
@@ -41,7 +38,7 @@ constexpr auto to_uint64(const auto& bs) requires(
 
 constexpr auto concat(const auto&... bitsets) requires(
     Is_Trivially_Constructible<decltype(bitsets)...>) {
-  constexpr auto Size = sum(rm_cvref_t<decltype(bitsets)>().size()...);
+  constexpr auto Size = jefc::sum(rm_cvref_t<decltype(bitsets)>().size()...);
   const auto list_ulong = std::array{to_uint64(bitsets)...};
   constexpr auto List_Sizes =
       std::array{rm_cvref_t<decltype(bitsets)>().size()...};
@@ -56,7 +53,7 @@ constexpr auto concat(const auto&... bitsets) requires(
 
 auto concat(const auto&... bitsets) requires(
     !Is_Trivially_Constructible<decltype(bitsets)...>) {
-  constexpr auto Size = sum(rm_cvref_t<decltype(bitsets)>().size()...);
+  constexpr auto Size = jefc::sum(rm_cvref_t<decltype(bitsets)>().size()...);
   const auto list_string = std::array{bitsets.to_string()...};
   std::string bs_str;
   for (const auto& bs : list_string) {
@@ -79,7 +76,7 @@ auto split(const auto& bs, auto& bs1, auto&... bitsets) {
   constexpr std::uint64_t Bs_Size = rm_cvref_t<decltype(bs)>().size();
   constexpr std::uint64_t Bs1_Size = rm_cvref_t<decltype(bs1)>().size();
   constexpr std::uint64_t Bsrest_Size =
-      sum(rm_cvref_t<decltype(bitsets)>().size()...);
+      jefc::sum(rm_cvref_t<decltype(bitsets)>().size()...);
   static_assert(Bs_Size == Bs1_Size + Bsrest_Size);
   constexpr auto Use_Str =
       !is_trivially_constructible_v<rm_cvref_t<decltype(bs)>().size()>;
