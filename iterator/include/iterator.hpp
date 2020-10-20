@@ -1,20 +1,20 @@
 #ifndef JEFLIB_ITERATOR
 #define JEFLIB_ITERATOR
 
-#include <memory>
-
+#include <iterator>
 namespace JefLib::Iterator {
 
-template <typename T, typename Distance = std::ptrdiff_t, typename Pointer = T*,
-          typename Reference = T&>
+template <typename T>
 class RandomAccessIterator {
  public:
+  //using iterator_category = std::random_access_iterator_tag;
+  using iterator_category = std::contiguous_iterator_tag;
   using value_type = T;
-  using difference_type = Distance;
-  using pointer = Pointer;
-  using const_pointer = const Pointer;
-  using reference = Reference;
-  using const_reference = const Reference;
+  using difference_type = std::ptrdiff_t;
+  using pointer = T*;
+  using const_pointer = const T*;
+  using reference = T&;
+  using const_reference = const T&;
 
   constexpr auto& operator++() { return (++data_, *this); }
   constexpr auto operator++(int) {
@@ -38,17 +38,12 @@ class RandomAccessIterator {
   constexpr auto operator->() { return data_; }
   constexpr auto operator->() const { return data_; }
 
-  constexpr auto operator-(const RandomAccessIterator& other) const {
-    return std::distance(this->data_, other.operator->());
-  }
-
-  explicit RandomAccessIterator(const pointer& ptr) : data_{ptr} {}
-  explicit RandomAccessIterator(pointer&& ptr) : data_{ptr} {}
+  explicit constexpr RandomAccessIterator(const pointer& ptr) : data_{ptr} {}
+  explicit constexpr RandomAccessIterator(pointer&& ptr) : data_{ptr} {}
 
   // default operators
   constexpr RandomAccessIterator() = default;
   constexpr RandomAccessIterator(const RandomAccessIterator&) = default;
-  constexpr RandomAccessIterator(RandomAccessIterator&) = default;
   constexpr RandomAccessIterator(RandomAccessIterator&&) = default;
   constexpr RandomAccessIterator& operator=(const RandomAccessIterator&) =
       default;
@@ -59,6 +54,13 @@ class RandomAccessIterator {
  private:
   pointer data_{nullptr};
 };
+
+template <typename T>
+constexpr auto operator-(
+    const RandomAccessIterator<T>& lhs,
+    const RandomAccessIterator<T>& rhs) {
+  return lhs.operator->() - rhs.operator->();
+}
 
 }  // namespace JefLib::Iterator
 #endif

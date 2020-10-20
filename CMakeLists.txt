@@ -8,6 +8,7 @@ add_subdirectory(common)
 add_subdirectory(bitset)
 add_subdirectory(allocator)
 add_subdirectory(iterator)
+add_subdirectory(vector)
 
 include(CodeCoverage.cmake)
 
