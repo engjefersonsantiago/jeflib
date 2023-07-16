@@ -81,8 +81,7 @@ class RandomAccessIterator {
             const RandomAccessIterator &) = default;
     constexpr RandomAccessIterator &operator=(
             RandomAccessIterator &&) = default;
-    constexpr RandomAccessIterator &operator<=>(
-            const RandomAccessIterator &) const = default;
+    constexpr auto operator<=>(const RandomAccessIterator &) const = default;
 
  private:
     pointer data_{nullptr};
