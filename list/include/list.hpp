@@ -36,7 +36,7 @@ class list {
         using pointer = Node *;
         using const_pointer = const pointer *;
         using reference = Node &;
-        using const_reference = const reference &;
+        using const_reference = const Node &;
 
         constexpr list_iterator &operator++() {
             data_ = data_->next;
@@ -79,7 +79,7 @@ class list {
     class list_reverse_iterator : public list_iterator {
      public:
         explicit constexpr list_reverse_iterator(
-                const list_iterator::pointer &ptr)
+                const typename list_iterator::pointer &ptr)
                 : list_iterator(ptr) {}
 
         constexpr list_reverse_iterator &operator++() {
