@@ -18,6 +18,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
+    - name: Install Build Deps
+      run: sudo apt-get install -y gcc g++ doxygen googletest libgtest-dev graphviz exuberant-ctags gcovr lcov
+
     - uses: actions/checkout@v3
 
     - name: Configure CMake
