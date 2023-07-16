@@ -9,6 +9,7 @@ add_subdirectory(bitset)
 add_subdirectory(allocator)
 add_subdirectory(iterator)
 add_subdirectory(vector)
+add_subdirectory(list)
 
 include(CodeCoverage.cmake)
 
