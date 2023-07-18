@@ -3,11 +3,8 @@ language: cpp
 
 addons:
   apt:
-    sources:
-      - ubuntu-toolchain-r-test
     packages:
       - clang
-      - clang++
       - gcc
       - g++
       - doxygen
